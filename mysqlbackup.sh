@@ -1,9 +1,9 @@
 #!/bin/bash
 ### Write log to temporary file  ###
-exec &> /tmp/backuplog.txt
+exec &> /var/log/mysql-backuplog.txt
 
 ### Defaults Setup ###
-STORAGEDIR="/path/to/backup";
+STORAGEDIR="/data/project/backup/mysql";
 NOW=`date "+%s"`;
 OLDESTDIR=`ls $STORAGEDIR | head -1`;
 NOWDIR=`date +"%Y-%m-%d"`;
@@ -16,14 +16,13 @@ DIRLIST=`ls -lRh $BACKUPDIR`;
 ROTATION="7"
 GZIPCHECK=();
 ### Server Setup ###
-MUSER="dbuser";
-MPASS="dbpassword";
 MHOST="localhost";
 MPORT="3306";
 IGNOREDB="
 information_schema
 mysql
 test
+performance_schema
 "
 MYSQL=`which mysql`;
 MYSQLDUMP=`which mysqldump`;
@@ -43,7 +42,7 @@ else
 fi
 
 ### Get the list of available databases ###
-DBS="$(mysql -u $MUSER -p$MPASS -h $MHOST -P $MPORT -Bse 'show databases')"
+DBS="$(mysql -h $MHOST -P $MPORT -Bse 'show databases')"
 
 ### Backup DBs ###
 for db in $DBS
@@ -61,7 +60,7 @@ do
     if [ "$DUMP" == "yes" ]; then
         FILE="$BACKUPDIR/$NOWFILE-$db.sql.gz";
         echo "BACKING UP $db";
-        $MYSQLDUMP --add-drop-database --opt --lock-all-tables -u $MUSER -p$MPASS -h $MHOST -P $MPORT $db | gzip > $FILE
+        $MYSQLDUMP --add-drop-database --opt --lock-all-tables -h $MHOST -P $MPORT $db | gzip > $FILE
         if [ "$?" = "0" ]; then
             gunzip -t $FILE;
             if [ "$?" = "0" ]; then
@@ -104,5 +103,5 @@ if [ "$CHECKSUM" == "$CHECKOUTS" ]; then
 else
     echo "Dispatching Karl, he's an Expert";
     ### Send mail with contents of logfile ###
-    #mail -s "Backuplog" mail@domain.tld < /tmp/backuplog.txt;
+    mail -s "Backuplog" wiki_dump@ckurs.de < /var/log/mysql-backuplog.txt;
 fi
