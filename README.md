@@ -10,9 +10,13 @@ bash script to backup your databases
 
 <code>ROTATION</code> = Number of days the backup should rotate. Default is 7.
 
-<code>MUSER</code> = Username
+Crotab
+======
 
-<code>MPASS</code> = Password
+For regular updates create a new cronejob <code>crontab -e</code> and insert the following contents
+<code>
+0 0 * * * /home/vagrant/simple-mysqlbackup/mysqlbackup.sh
+</code>
 
 Suggestions
 ===========
